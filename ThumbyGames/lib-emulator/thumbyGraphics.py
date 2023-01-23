@@ -39,6 +39,7 @@ class GraphicsClass:
         self.max_x = width-1
         self.max_y = height-1
         self.frameRate = 0
+        self.frameTimeMs = 0
         self.lastUpdateEnd = 0
         self.setFont('lib/font5x7.bin', 5, 7, 1)
         self.fill(0)
@@ -60,13 +61,14 @@ class GraphicsClass:
     @micropython.native
     def setFPS(self, newFrameRate):
         self.frameRate = newFrameRate
+        self.frametimeMs = int(256000//int(self.frameRate*256+0.5)) if self.frameRate != 0 else 0
     
     # Push the buffer to the hardware display.
     @micropython.native
     def update(self):
         self.display.show()
         if self.frameRate>0:
-            frameTimeRemaining = round(1000/self.frameRate) - ticks_diff(ticks_ms(), self.lastUpdateEnd)
+            frameTimeRemaining = self.frameTimeMs - ticks_diff(ticks_ms(), self.lastUpdateEnd)
             while(frameTimeRemaining>1):
                 buttonA.update()
                 buttonB.update()
@@ -75,9 +77,9 @@ class GraphicsClass:
                 buttonL.update()
                 buttonR.update()
                 sleep_ms(1)
-                frameTimeRemaining = round(1000/self.frameRate) - ticks_diff(ticks_ms(), self.lastUpdateEnd)
+                frameTimeRemaining = self.frameTimeMs - ticks_diff(ticks_ms(), self.lastUpdateEnd)
             while(frameTimeRemaining>0):
-                frameTimeRemaining = round(1000/self.frameRate) - ticks_diff(ticks_ms(), self.lastUpdateEnd)
+                frameTimeRemaining = self.frameTimeMs - ticks_diff(ticks_ms(), self.lastUpdateEnd)
         self.lastUpdateEnd=ticks_ms()
 
     # Set display brightness, valid values 0 to 127
